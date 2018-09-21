@@ -1,8 +1,7 @@
-class CreateTransitCalendars < ActiveRecord::Migration[5.2]
+class CreateTransitServices < ActiveRecord::Migration[5.2]
   def change
-    create_table :transit_calendars, id: false do |t|
-      t.bigserial              :id, primary_key: true
-      t.string                 :canon, null: false
+    create_table :transit_services, id: false do |t|
+      t.string                 :id, primary_key: true
       t.boolean                :is_mon, null: false
       t.boolean                :is_tue, null: false
       t.boolean                :is_wed, null: false
