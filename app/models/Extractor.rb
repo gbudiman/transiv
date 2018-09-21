@@ -1,10 +1,15 @@
 class Extractor
   def initialize bundle
     @bundle = bundle
-    @h = {}
+    @h = { statistics: {} }
   end
 
   def execute!
+    _execute_extract
+    load_all
+  end
+
+  def _execute_extract
     extract_agency
     extract_routes
     extract_trips
@@ -12,18 +17,28 @@ class Extractor
     extract_stops
     extract_stop_times
     extract_service
-
-    load_all
   end
 
   def accountability
+    is_accountable = true
     scoped = { 'transit_routes.transit_agency_id' => @h[:id] }
-    ap TransitRoute.joins(:transit_agency).where(scoped).count
-    ap TransitTrip.joins(transit_route: :transit_agency).where(scoped).count
-    ap TransitTrip.get_associated(:transit_shapes, scoped: scoped, uniq: [:id, :sequence_id]).to_a.count
-    ap TransitTrip.get_associated(:transit_services, scoped: scoped, uniq: [:id]).to_a.count
-    ap TransitTrip.joins(:transit_stop_times).joins(:transit_route).where(scoped).count
-    ap TransitTrip.joins(transit_stop_times: :transit_stop).select('transit_stops.id').distinct.count
+    _execute_extract
+    
+    persistance = {
+      transit_routes: TransitRoute.joins(:transit_agency).where(scoped).count,
+      transit_trips: TransitTrip.joins(transit_route: :transit_agency).where(scoped).count,
+      transit_services: TransitTrip.get_associated(:transit_services, scoped: scoped, uniq: [:id]).to_a.count,
+      transit_shapes: TransitTrip.get_associated(:transit_shapes, scoped: scoped, uniq: [:id, :sequence_id]).to_a.count,
+      transit_stop_times: TransitTrip.joins(:transit_stop_times).joins(:transit_route).where(scoped).count,
+      transit_stops: TransitTrip.joins(transit_stop_times: :transit_stop).select('transit_stops.id').distinct.count
+    }
+
+    
+    @h[:statistics].each do |stat, value|
+      is_accountable = is_accountable and (persistance[stat] == value)
+    end
+
+    return is_accountable
   end
 
   def load_all
@@ -39,14 +54,6 @@ class Extractor
              transform: { arrival: :time_to_numeric,
                           departure: :time_to_numeric }
     end
-
-    # act = {}
-    # [TransitRoute, TransitService, TransitShape, TransitTrip, TransitStop, TransitStopTime].each do |l|
-    #   table = l.table_name.to_sym
-    #   act[table] = @h[table].length
-    # end
-
-    # return act
   end
 
   def extract_agency
@@ -68,6 +75,8 @@ class Extractor
         transit_agency_id: @h[:id]
       })
     end 
+
+    @h[:statistics][:transit_routes] = @h[:transit_routes].count
   end
 
   def extract_trips
@@ -84,6 +93,8 @@ class Extractor
         headsign: headsign
       })
     end
+
+    @h[:statistics][:transit_trips] = @h[:transit_trips].count
   end
 
   def extract_shapes
@@ -97,12 +108,16 @@ class Extractor
         sequence_id: sequence_id
       })
     end
+
+    @h[:statistics][:transit_shapes] = @h[:transit_shapes].count
   end
 
   def extract_stops
+    stop_count = 0
     @h[:transit_stops] = []
     get_iterator('stops.txt').each do |l|
       id, _, name, _, lat, long, _, type, parent_id = l.split_comma_unquote
+      stop_count = stop_count + (type == '0' ? 1 : 0)
       @h[:transit_stops].push({
         id: id,
         handle: name,
@@ -112,6 +127,8 @@ class Extractor
         parent_id: parent_id
       })
     end
+
+    @h[:statistics][:transit_stops] = stop_count
   end
 
   def extract_stop_times
@@ -127,6 +144,8 @@ class Extractor
         handle: headsign
       })
     end
+
+    @h[:statistics][:transit_stop_times] = @h[:transit_stop_times].count
   end
 
   def extract_service
@@ -147,6 +166,8 @@ class Extractor
         end_date: Date.parse(ed)
       })
     end
+
+    @h[:statistics][:transit_services] = @h[:transit_services].count
   end
 
 private

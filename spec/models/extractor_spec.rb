@@ -8,8 +8,8 @@ RSpec.describe Extractor, type: :model do
   end
 
   context 'execution' do
-    it 'should' do
-      @e.accountability
+    it 'should reflect in database correctly' do
+      expect(@e.accountability).to eq true
     end
   end
 end
