@@ -2,7 +2,9 @@ class Extractor
   def initialize bundle
     @bundle = bundle
     @h = {}
+  end
 
+  def execute!
     extract_agency
     extract_routes
     extract_trips
@@ -14,20 +16,39 @@ class Extractor
     load_all
   end
 
+  def accountability
+    scoped = { 'transit_routes.transit_agency_id' => @h[:id] }
+    ap TransitRoute.joins(:transit_agency).where(scoped).count
+    ap TransitTrip.joins(transit_route: :transit_agency).where(scoped).count
+    # ap TransitTrip.joins(:transit_route)
+    #               .joins(:transit_shape)
+    #               .where(scoped)
+    #               .select('transit_shapes.id, transit_shapes.sequence_id')
+    #               .distinct.to_a.count
+    ap TransitTrip.get_associated(:transit_shapes, scoped: scoped).to_a.count
+  end
+
   def load_all
     ActiveRecord::Base.transaction do
       TransitAgency.find_or_initialize_by(id: @h[:id], handle: @h[:handle]).save!
-      insert data: :routes, using: TransitRoute, lookup: [:handle]
-      insert data: :services, using: TransitService
-      insert data: :shapes, using: TransitShape, lookup: [:id, :sequence_id]
-      insert data: :trips, using: TransitTrip
-      insert data: :stops, using: TransitStop
-      insert data: :stop_times, 
-             using: TransitStopTime, 
-             lookup: [:transit_trip_id, :transit_stop_id],
-             transform: { arrival: :time_to_numeric,
-                          departure: :time_to_numeric }
+      insert using: TransitRoute, lookup: [:handle]
+      insert using: TransitService
+      insert using: TransitShape, lookup: [:id, :sequence_id]
+      insert using: TransitTrip
+      # insert using: TransitStop
+      # insert using: TransitStopTime, 
+      #        lookup: [:transit_trip_id, :transit_stop_id],
+      #        transform: { arrival: :time_to_numeric,
+      #                     departure: :time_to_numeric }
     end
+
+    # act = {}
+    # [TransitRoute, TransitService, TransitShape, TransitTrip, TransitStop, TransitStopTime].each do |l|
+    #   table = l.table_name.to_sym
+    #   act[table] = @h[table].length
+    # end
+
+    # return act
   end
 
   def extract_agency
@@ -37,10 +58,10 @@ class Extractor
   end
 
   def extract_routes
-    @h[:routes] = []
+    @h[:transit_routes] = []
     get_iterator('routes.txt').each do |l|
       id, _, name, _, type, bg_color, fg_color = l.split_comma_unquote
-      @h[:routes].push({
+      @h[:transit_routes].push({
         id: id,
         handle: name,
         route_type: type.to_i,
@@ -52,10 +73,10 @@ class Extractor
   end
 
   def extract_trips
-    @h[:trips] = []
+    @h[:transit_trips] = []
     get_iterator('trips.txt').each do |l|
       route_id, service_id, trip_id, headsign, direction, block_id, shape_id = l.split_comma_unquote
-      @h[:trips].push({
+      @h[:transit_trips].push({
         id: trip_id,
         transit_route_id: route_id,
         transit_service_id: service_id,
@@ -68,10 +89,10 @@ class Extractor
   end
 
   def extract_shapes
-    @h[:shapes] = []
+    @h[:transit_shapes] = []
     get_iterator('shapes.txt').each do |l|
       id, lat, long, sequence_id = l.split_comma_unquote
-      @h[:shapes].push({
+      @h[:transit_shapes].push({
         id: id,
         lat: lat,
         long: long,
@@ -81,10 +102,10 @@ class Extractor
   end
 
   def extract_stops
-    @h[:stops] = []
+    @h[:transit_stops] = []
     get_iterator('stops.txt').each do |l|
       id, _, name, _, lat, long, _, type, parent_id = l.split_comma_unquote
-      @h[:stops].push({
+      @h[:transit_stops].push({
         id: id,
         handle: name,
         lat: lat,
@@ -96,10 +117,10 @@ class Extractor
   end
 
   def extract_stop_times
-    @h[:stop_times] = []
+    @h[:transit_stop_times] = []
     get_iterator('stop_times.txt').each do |l|
       trip_id, arrival, departure, stop_id, sequence, headsign = l.split_comma_unquote
-      @h[:stop_times].push({
+      @h[:transit_stop_times].push({
         transit_trip_id: trip_id,
         transit_stop_id: stop_id,
         arrival: arrival,
@@ -111,10 +132,10 @@ class Extractor
   end
 
   def extract_service
-    @h[:services] = []
+    @h[:transit_services] = []
     get_iterator('calendar.txt').each do |l|
       id, m, t, w, r, f, s, u, st, ed = l.split_comma_unquote
-      @h[:services].push({
+      @h[:transit_services].push({
         id: id,
         is_mon: m,
         is_tue: t,
@@ -135,7 +156,8 @@ private
     return IO.readlines(Rails.root.join('db', 'raw', @bundle, file)).drop(1)
   end
 
-  def insert data:, using:, lookup: [], transform: {}
+  def insert using:, lookup: [], transform: {}
+    data = using.table_name.to_sym
     anchor = @h[data].first
     sql = "INSERT INTO #{using.table_name} (#{anchor.keys.join(', ')}) VALUES "
     datatypes = []
@@ -202,21 +224,6 @@ private
     puts "> Persisting data..."
     ActiveRecord::Base.connection.execute(sql)
     puts "> Done loading #{using.to_s}: #{using.count} rows loaded"
-
-    # len = @h[data].length
-    # mod = 1000
-
-    # @h[data].each_with_index do |datum, index|
-    #   using.find_or_initialize_by(datum).save!(validate: false)
-
-    #   if index == 0
-    #     puts "> Begin load into #{using.to_s}..."
-    #   elsif index % mod == 0
-    #     puts "  - Loading #{using.to_s}: #{index}/#{len} (#{sprintf('%3.1f%%', (index.to_f / len * 100))})"
-    #   end
-    # end
-
-    # puts "> Done loading #{using.to_s}: #{using.count} rows loaded"
   end
 
   def time_to_numeric s
@@ -227,6 +234,6 @@ end
 
 class String
   def split_comma_unquote
-    return self.split(/\,/).map{ |x| x.gsub(/\"/, '') }
+    return self.strip.split(/\,/).map{ |x| x.gsub(/\"/, '') }
   end
 end

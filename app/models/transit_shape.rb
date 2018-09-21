@@ -2,5 +2,6 @@ class TransitShape < ApplicationRecord
   acts_as_mappable default_units: :kms,
                    default_formula: :flat
 
-  has_many :transit_trip_shapes, dependent: :destroy
+  belongs_to :transit_trip
+  validates :transit_trip, presence: true
 end
