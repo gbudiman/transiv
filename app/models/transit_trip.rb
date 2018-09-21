@@ -4,14 +4,15 @@ class TransitTrip < ApplicationRecord
 
   #has_many :transit_shapes, dependent: :destroy
   belongs_to :transit_shape, primary_key: :id
-  belongs_to :transit_services, primary_key: :id
+  belongs_to :transit_service, primary_key: :id
   has_many :transit_stop_times, dependent: :destroy
 
-  def self.get_associated klass, scoped:
+  def self.get_associated klass, scoped: nil, uniq: 
+    selector = uniq.map{ |x| "#{klass}.#{x} " }.join(', ')
     self.joins(:transit_route)
         .joins(klass.to_s.singularize.to_sym)
         .where(scoped)
-        .select("#{klass}.id, #{klass}.sequence_id")
+        .select(selector)
         .distinct
   end
 end

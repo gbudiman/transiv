@@ -20,12 +20,10 @@ class Extractor
     scoped = { 'transit_routes.transit_agency_id' => @h[:id] }
     ap TransitRoute.joins(:transit_agency).where(scoped).count
     ap TransitTrip.joins(transit_route: :transit_agency).where(scoped).count
-    # ap TransitTrip.joins(:transit_route)
-    #               .joins(:transit_shape)
-    #               .where(scoped)
-    #               .select('transit_shapes.id, transit_shapes.sequence_id')
-    #               .distinct.to_a.count
-    ap TransitTrip.get_associated(:transit_shapes, scoped: scoped).to_a.count
+    ap TransitTrip.get_associated(:transit_shapes, scoped: scoped, uniq: [:id, :sequence_id]).to_a.count
+    ap TransitTrip.get_associated(:transit_services, scoped: scoped, uniq: [:id]).to_a.count
+    ap TransitTrip.joins(:transit_stop_times).joins(:transit_route).where(scoped).count
+    ap TransitTrip.joins(transit_stop_times: :transit_stop).select('transit_stops.id').distinct.count
   end
 
   def load_all
@@ -35,11 +33,11 @@ class Extractor
       insert using: TransitService
       insert using: TransitShape, lookup: [:id, :sequence_id]
       insert using: TransitTrip
-      # insert using: TransitStop
-      # insert using: TransitStopTime, 
-      #        lookup: [:transit_trip_id, :transit_stop_id],
-      #        transform: { arrival: :time_to_numeric,
-      #                     departure: :time_to_numeric }
+      insert using: TransitStop
+      insert using: TransitStopTime, 
+             lookup: [:transit_trip_id, :transit_stop_id],
+             transform: { arrival: :time_to_numeric,
+                          departure: :time_to_numeric }
     end
 
     # act = {}
