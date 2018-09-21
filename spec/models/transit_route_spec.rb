@@ -1,5 +1,17 @@
 require 'rails_helper'
 
 RSpec.describe TransitRoute, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  context 'LA Metro Rail' do
+    it 'should list all routes correctly' do
+      TransitRoute.get :all, agency: 'LACMTA_Rail'
+    end
+
+    it 'should list one specific route correctly' do
+      TransitRoute.get '801'
+    end
+
+    it 'should list multiple routes correctly' do
+      TransitRoute.get ['801', '806']
+    end
+  end
 end
