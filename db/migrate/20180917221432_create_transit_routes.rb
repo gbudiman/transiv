@@ -3,6 +3,7 @@ class CreateTransitRoutes < ActiveRecord::Migration[5.2]
     create_table :transit_routes, id: false do |t|
       t.string                 :id, primary_key: true
       t.string                 :transit_agency_id, null: false
+      t.string                 :shorthand
       t.string                 :handle, null: false
       t.integer                :route_type, null: false
       t.string                 :bg_color
@@ -10,6 +11,6 @@ class CreateTransitRoutes < ActiveRecord::Migration[5.2]
     end
 
     add_index :transit_routes, :transit_agency_id, name: 'route_to_agency'
-    add_index :transit_routes, :handle, unique: true
+    add_index :transit_routes, :shorthand, unique: true
   end
 end

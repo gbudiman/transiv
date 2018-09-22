@@ -22,11 +22,12 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
 
   create_table "transit_routes", id: :string, force: :cascade do |t|
     t.string "transit_agency_id", null: false
+    t.string "shorthand"
     t.string "handle", null: false
     t.integer "route_type", null: false
     t.string "bg_color"
     t.string "fg_color"
-    t.index ["handle"], name: "index_transit_routes_on_handle", unique: true
+    t.index ["shorthand"], name: "index_transit_routes_on_shorthand", unique: true
     t.index ["transit_agency_id"], name: "route_to_agency"
   end
 

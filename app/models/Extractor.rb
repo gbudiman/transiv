@@ -43,8 +43,10 @@ class Extractor
 
   def load_all
     ActiveRecord::Base.transaction do
+      puts "Loading data for #{@h[:id]}..."
+      puts '--------------------------------'
       TransitAgency.find_or_initialize_by(id: @h[:id], handle: @h[:handle]).save!
-      insert using: TransitRoute, lookup: [:handle]
+      insert using: TransitRoute, lookup: [:shorthand]
       insert using: TransitService
       insert using: TransitShape, lookup: [:id, :sequence_id]
       insert using: TransitTrip
@@ -65,9 +67,10 @@ class Extractor
   def extract_routes
     @h[:transit_routes] = []
     get_iterator('routes.txt').each do |l|
-      id, _, name, _, type, bg_color, fg_color = l.split_comma_unquote
+      id, shorthand, name, _, type, bg_color, fg_color = l.split_comma_unquote
       @h[:transit_routes].push({
         id: id,
+        shorthand: shorthand,
         handle: name,
         route_type: type.to_i,
         bg_color: bg_color,
@@ -240,7 +243,7 @@ private
 
     puts "> Persisting data..."
     ActiveRecord::Base.connection.execute(sql)
-    puts "> Done loading #{using.to_s}: #{using.count} rows loaded"
+    puts "> Done loading #{using.to_s}: #{using.count} rows in table"
   end
 
   def time_to_numeric s

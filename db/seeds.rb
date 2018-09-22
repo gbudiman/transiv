@@ -5,5 +5,5 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
-#Extractor.new('gtfs_rail-master').execute!
+Extractor.new('gtfs_rail-master').execute!
 Extractor.new('gtfs_bus-master').execute!
