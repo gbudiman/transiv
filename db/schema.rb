@@ -24,8 +24,8 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.string "transit_agency_id", null: false
     t.string "handle", null: false
     t.integer "route_type", null: false
-    t.string "bg_color", null: false
-    t.string "fg_color", null: false
+    t.string "bg_color"
+    t.string "fg_color"
     t.index ["handle"], name: "index_transit_routes_on_handle", unique: true
     t.index ["transit_agency_id"], name: "route_to_agency"
   end
@@ -95,8 +95,8 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.string "transit_route_id", null: false
     t.string "transit_service_id", null: false
     t.string "transit_shape_id", null: false
-    t.boolean "direction", null: false
-    t.integer "block", null: false
+    t.integer "direction", null: false
+    t.string "block", null: false
     t.string "headsign"
     t.index ["transit_route_id"], name: "trip_to_route"
     t.index ["transit_service_id"], name: "trip_to_service"

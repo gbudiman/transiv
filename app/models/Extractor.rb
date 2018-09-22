@@ -103,8 +103,6 @@ class Extractor
       id, lat, lng, sequence_id = l.split_comma_unquote
       @h[:transit_shapes].push({
         id: id,
-        # lat: lat,
-        # lng: lng,
         lonlat: "ST_GeomFromText('POINT(#{lng} #{lat})', 4326)",
         sequence_id: sequence_id
       })
@@ -122,10 +120,8 @@ class Extractor
       @h[:transit_stops].push({
         id: id,
         handle: name,
-        # lat: lat,
-        # lng: lng,
         lonlat: "ST_GeomFromText('POINT(#{lng} #{lat})', 4326)",
-        stop_type: type,
+        stop_type: type || 0,
         parent_id: parent_id
       })
     end

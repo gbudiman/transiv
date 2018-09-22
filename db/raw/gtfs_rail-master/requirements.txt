@@ -1,3 +1,0 @@
-GitPython==2.0.2
-texttable==0.8.4
-pytz==2016.4

@@ -5,8 +5,8 @@ class CreateTransitTrips < ActiveRecord::Migration[5.2]
       t.string                 :transit_route_id, null: false
       t.string                 :transit_service_id, null: false
       t.string                 :transit_shape_id, null: false
-      t.boolean                :direction, null: false
-      t.integer                :block, null: false
+      t.integer                :direction, null: false
+      t.string                 :block, null: false
       t.string                 :headsign
     end
 

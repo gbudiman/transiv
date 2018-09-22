@@ -5,8 +5,8 @@ class CreateTransitRoutes < ActiveRecord::Migration[5.2]
       t.string                 :transit_agency_id, null: false
       t.string                 :handle, null: false
       t.integer                :route_type, null: false
-      t.string                 :bg_color, null: false
-      t.string                 :fg_color, null: false
+      t.string                 :bg_color
+      t.string                 :fg_color
     end
 
     add_index :transit_routes, :transit_agency_id, name: 'route_to_agency'

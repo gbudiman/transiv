@@ -8,8 +8,8 @@ RSpec.describe TransitStop, type: :model do
 
   context 'proximity' do
     it 'should list in ascending distance' do
-      TransitStop.get_stops(from: [@lat, @long]).each do |r|
-        puts r.dist
+      TransitStop.within(@lat, @long).each do |r|
+        ap r
       end
     end
   end
