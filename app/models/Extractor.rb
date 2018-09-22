@@ -100,11 +100,12 @@ class Extractor
   def extract_shapes
     @h[:transit_shapes] = []
     get_iterator('shapes.txt').each do |l|
-      id, lat, long, sequence_id = l.split_comma_unquote
+      id, lat, lng, sequence_id = l.split_comma_unquote
       @h[:transit_shapes].push({
         id: id,
-        lat: lat,
-        long: long,
+        # lat: lat,
+        # lng: lng,
+        lonlat: "ST_GeomFromText('POINT(#{lng} #{lat})', 4326)",
         sequence_id: sequence_id
       })
     end
@@ -116,13 +117,14 @@ class Extractor
     stop_count = 0
     @h[:transit_stops] = []
     get_iterator('stops.txt').each do |l|
-      id, _, name, _, lat, long, _, type, parent_id = l.split_comma_unquote
+      id, _, name, _, lat, lng, _, type, parent_id = l.split_comma_unquote
       stop_count = stop_count + (type == '0' ? 1 : 0)
       @h[:transit_stops].push({
         id: id,
         handle: name,
-        lat: lat,
-        long: long,
+        # lat: lat,
+        # lng: lng,
+        lonlat: "ST_GeomFromText('POINT(#{lng} #{lat})', 4326)",
         stop_type: type,
         parent_id: parent_id
       })

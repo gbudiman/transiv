@@ -17,8 +17,8 @@ class TransitRoute < ApplicationRecord
       q = q.where('transit_agencies.id' => agency)
     end
 
-    ap q.select(:id, :handle, 
-                'transit_agencies.id AS agency_id', 
-                'transit_agencies.handle AS agency_handle')
+    return q.select(:id, :handle, 
+                    'transit_agencies.id AS agency_id', 
+                    'transit_agencies.handle AS agency_handle')
   end
 end

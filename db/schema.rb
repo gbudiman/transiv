@@ -14,6 +14,7 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "postgis"
 
   create_table "transit_agencies", id: :string, force: :cascade do |t|
     t.string "handle", null: false
@@ -43,11 +44,10 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
 
   create_table "transit_shapes", id: false, force: :cascade do |t|
     t.string "id"
-    t.decimal "lat", precision: 10, scale: 6, null: false
-    t.decimal "long", precision: 10, scale: 6, null: false
+    t.geography "lonlat", limit: {:srid=>4326, :type=>"st_point", :geographic=>true}
     t.integer "sequence_id", null: false
     t.index ["id", "sequence_id"], name: "index_transit_shapes_on_id_and_sequence_id", unique: true
-    t.index ["lat", "long"], name: "index_transit_shapes_on_lat_and_long"
+    t.index ["lonlat"], name: "index_transit_shapes_on_lonlat", using: :gist
   end
 
   create_table "transit_stop_times", force: :cascade do |t|
@@ -64,11 +64,10 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
 
   create_table "transit_stops", id: :string, force: :cascade do |t|
     t.string "handle", null: false
-    t.decimal "lat", precision: 10, scale: 6, null: false
-    t.decimal "long", precision: 10, scale: 6, null: false
+    t.geography "lonlat", limit: {:srid=>4326, :type=>"st_point", :geographic=>true}
     t.string "parent_id"
     t.string "stop_type", null: false
-    t.index ["lat", "long"], name: "index_transit_stops_on_lat_and_long"
+    t.index ["lonlat"], name: "index_transit_stops_on_lonlat", using: :gist
   end
 
   create_table "transit_trip_calendars", force: :cascade do |t|
