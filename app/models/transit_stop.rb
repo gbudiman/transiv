@@ -73,7 +73,8 @@ class TransitStop < ApplicationRecord
   }
 
   scope :sort_by_route_name, -> {
-    order('transit_routes.id, transit_trips.direction')
+    #order('transit_routes.id, transit_trips.direction')
+    order('transit_routes.id')
   }
 
   scope :sort_by_route_departure, -> {
