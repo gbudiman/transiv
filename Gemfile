@@ -37,7 +37,13 @@ gem 'jbuilder', '~> 2.5'
 gem 'bootsnap', '>= 1.1.0', require: false
 gem 'awesome_print'
 gem 'rspec-rails'
+gem 'jquery-rails'
 gem 'activerecord-postgis-adapter'
+gem 'webpacker'
+gem 'react-rails'
+gem 'haml-rails'
+gem 'figaro'
+gem 'bootstrap'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

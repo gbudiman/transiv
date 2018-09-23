@@ -4,35 +4,44 @@ class TransitRoute < ApplicationRecord
   belongs_to :transit_agency
   validates :transit_agency, presence: true
 
-  # def self.get _ids, agency: nil
-  #   q = TransitRoute.joins(:transit_agency)
+  scope :routes_of, -> (id, agency_id: nil) {
+    r = routes(id)
+    if agency_id
+      r = r.restrict_agency(agency_id)
+    end
 
-  #   if _ids == :all
-  #   else
-  #     ids = _ids.is_a?(Array) ? _ids : [_ids]
-  #     q = q.where(id: ids)
-  #   end
-
-  #   if agency
-  #     q = q.where('transit_agencies.id' => agency)
-  #   end
-
-  #   return q.select(:id, :handle, 
-  #                   'transit_agencies.id AS agency_id', 
-  #                   'transit_agencies.handle AS agency_handle')
-  # end
-
-  scope :paths_of, -> (id, at: Time.now, direction: 0) {
-    joins_shape.joins_services(at)
-      .where('transit_routes.id' => id)
-      .where('transit_trips.direction' => direction)
-      .reveal_coords
-      .merge(TransitShape.order_by_sequence(direction == 0 ? :asc : :desc))
-      .distinct
+    return r
   }
 
-  scope :joins_shape, -> {
+  scope :routes, -> (id) {
+    if (id == :all)
+    else
+      where(id: id)
+    end
+  }
+
+  scope :restrict_agency, -> (agency_id) {
+    joins_agency.where('transit_agencies.id' => agency_id)
+  }
+
+  scope :joins_agency, -> {
+    joins(:transit_agency)
+  }
+
+  scope :get_aggregate_paths, -> (at: Time.now.localtime) {
+    joins_shapes.joins_services(at).distinct
+  }
+
+  scope :get_aggregate_stops, -> (at: Time.now.localtime) {
+    joins_stops.joins_services(at).distinct
+  }
+
+  scope :joins_shapes, -> {
     joins(transit_trips: :transit_shape)
+  }
+
+  scope :joins_stops, -> {
+    joins(transit_trips: { transit_stop_times: :transit_stop })
   }
 
   scope :joins_services, -> (at) {
@@ -40,11 +49,27 @@ class TransitRoute < ApplicationRecord
       .merge(TransitService.active(at))
   }
 
+
   scope :reveal_coords, -> {
     select(%{
       ST_X(ST_AsText(lonlat)) AS lng,
-      ST_Y(ST_AsText(lonlat)) AS lat,
-      transit_shapes.sequence_id AS sequence_id
+      ST_Y(ST_AsText(lonlat)) AS lat
     })
+  }
+
+  scope :reveal_stop_info, -> {
+    reveal_stop_coords.reveal_stop_name
+  }
+
+  scope :reveal_stop_coords, -> {
+    select(%{
+      ST_X(ST_AsText(transit_stops.lonlat)) AS lng,
+      ST_Y(ST_AsText(transit_stops.lonlat)) AS lat
+    })
+  }
+
+  scope :reveal_stop_name, -> {
+    select('transit_stops.handle,
+            transit_routes.id')
   }
 end

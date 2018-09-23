@@ -7,7 +7,9 @@ RSpec.describe TransitShape, type: :model do
 
   context 'listing' do
     it 'should be retrieved correctly' do
-      ap TransitRoute.paths_of('802', at: @t)
+      q = TransitRoute.routes_of('802').get_aggregate_paths(at: @t)
+
+      expect(q.length).to be > 0
     end
   end
 end
