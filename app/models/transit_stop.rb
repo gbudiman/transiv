@@ -5,46 +5,22 @@ class TransitStop < ApplicationRecord
     where(stop_type: 0)
   }
 
-  scope :within_basic, -> (lat:, lng:, distance: 200, at: Time.now) {
-    stop_only.where(%{
-      ST_Distance(lonlat, 'POINT(%f %f)') < %f
-    } % [lng, lat, distance]).joins_stop_times(at).joins_trips.reveal_trips
-  }
-
   scope :within, -> (lat:, lng:, distance: 200, at: Time.now) {
-    #at = at.localtime
     stop_only.where(%{
       ST_Distance(lonlat, 'POINT(%f %f)') < %f
     } % [lng, lat, distance]).joins_stop_times(at).joins_routes.joins_services(at).humanize(lat, lng)
   }
 
-  
 
-  scope :active_day, -> (at) {
-    r = [nil, :is_mon, :is_tue, :is_wed, :is_thu, :is_fri, :is_sat, :is_sun]
-    where("transit_services.#{r[at.wday]}" => true)
-  }
-
-  scope :active_service, -> (at) {
-    where('transit_services.start_date <= :x AND transit_services.end_date >= :y', 
-      x: at.beginning_of_day,
-      y: at.beginning_of_day - 6.hours)
-  }
 
   scope :joins_services, -> (at) {
-    joins(transit_stop_times: { transit_trip: :transit_service }).active_day(at).active_service(at)
+    joins(transit_stop_times: { transit_trip: :transit_service })
+      .merge(TransitService.active(at))
+      #.active_day(at).active_service(at)
   }
 
   scope :joins_routes, -> {
     joins(transit_stop_times: { transit_trip: :transit_route })
-  }
-
-  scope :joins_trips, -> {
-    joins(transit_stop_times: [:transit_trip])
-  }
-
-  scope :reveal_trips, -> {
-    select('transit_trips.id, transit_trips.transit_route_id')
   }
 
   scope :joins_stop_times, -> (at) {
@@ -100,7 +76,11 @@ class TransitStop < ApplicationRecord
     order('transit_routes.id, transit_trips.direction')
   }
 
-  scope :sort_by_route_departure, -> (route_id: nil) {
-    order('transit_routes.id, transit_trips.direction, transit_stop_times.departure ASC')
+  scope :sort_by_route_departure, -> {
+    order('transit_stop_times.departure ASC')
+  }
+
+  scope :filter_routes, -> (routes) {
+    where('transit_routes.id' => routes)
   }
 end
