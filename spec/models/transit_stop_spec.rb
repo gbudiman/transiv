@@ -10,7 +10,7 @@ RSpec.describe TransitStop, type: :model do
     # @lat = 34.056197
     # @lng = -118.234249
 
-    @t = Time.parse('2018-09-21 19:00:00 -0700')
+    @t = Time.parse('2018-09-22 00:00:00 -0700')
   end
 
   context 'proximity' do

@@ -26,7 +26,9 @@ class TransitStop < ApplicationRecord
   }
 
   scope :active_service, -> (at) {
-    where('transit_services.start_date <= :x AND transit_services.end_date >= :x', x: at.beginning_of_day)
+    where('transit_services.start_date <= :x AND transit_services.end_date >= :y', 
+      x: at.beginning_of_day,
+      y: at.beginning_of_day - 6.hours)
   }
 
   scope :joins_services, -> (at) {
