@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.integer "route_type", null: false
     t.string "bg_color"
     t.string "fg_color"
-    t.index ["shorthand"], name: "index_transit_routes_on_shorthand", unique: true
+    t.index ["transit_agency_id", "id"], name: "index_transit_routes_on_transit_agency_id_and_id", unique: true
     t.index ["transit_agency_id"], name: "route_to_agency"
   end
 

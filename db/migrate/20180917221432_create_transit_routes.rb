@@ -11,6 +11,6 @@ class CreateTransitRoutes < ActiveRecord::Migration[5.2]
     end
 
     add_index :transit_routes, :transit_agency_id, name: 'route_to_agency'
-    add_index :transit_routes, :shorthand, unique: true
+    add_index :transit_routes, [:transit_agency_id, :id], unique: true
   end
 end

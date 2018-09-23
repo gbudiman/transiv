@@ -46,7 +46,7 @@ class Extractor
       puts "Loading data for #{@h[:id]}..."
       puts '--------------------------------'
       TransitAgency.find_or_initialize_by(id: @h[:id], handle: @h[:handle]).save!
-      insert using: TransitRoute, lookup: [:shorthand]
+      insert using: TransitRoute, lookup: [:transit_agency_id, :id]
       insert using: TransitService
       insert using: TransitShape, lookup: [:id, :sequence_id]
       insert using: TransitTrip
