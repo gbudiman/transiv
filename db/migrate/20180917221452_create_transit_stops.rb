@@ -10,5 +10,6 @@ class CreateTransitStops < ActiveRecord::Migration[5.2]
     end
 
     add_index :transit_stops, :lonlat, using: :gist
+    add_index :transit_stops, :gtfs_id, unique: true
   end
 end

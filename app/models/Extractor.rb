@@ -45,20 +45,22 @@ class Extractor
 
   def load_all
     ActiveRecord::Base.transaction do
-      
       insert using: TransitAgency, lookup: [:gtfs_id]
       insert using: TransitRoute, 
              lookup: [:transit_agency_id, :gtfs_id], 
              foreigns: { transit_agency_id: TransitAgency }
-      insert using: TransitService
-      insert using: TransitShape, lookup: [:gtfs_id, :sequence_id]
+      insert using: TransitService, lookup: [:gtfs_id]
+      insert using: TransitShape,
+             lookup: [:gtfs_id, :sequence_id]
       insert using: TransitTrip,
+             lookup: [:transit_route_id, :gtfs_id, :direction],
              foreigns: { transit_route_id: TransitRoute,
                          transit_service_id: TransitService,
                          transit_shape_id: TransitShape }
-      insert using: TransitStop
+      insert using: TransitStop,
+             lookup: [:gtfs_id]
       insert using: TransitStopTime, 
-             lookup: [:transit_trip_id, :transit_stop_id],
+             lookup: [:transit_stop_id, :transit_trip_id, :departure],
              transform: { arrival: :time_to_numeric,
                           departure: :time_to_numeric },
              foreigns: { transit_stop_id: TransitStop,
@@ -205,12 +207,11 @@ private
     return IO.readlines(Rails.root.join('db', 'raw', @bundle, file)).drop(1)
   end
 
-  def insert using:, lookup: [], transform: {}, foreigns: {}
+  def insert using:, lookup: nil, transform: {}, foreigns: {}
     data = using.table_name.to_sym
     anchor = @h[data].first
     sql = "INSERT INTO #{using.table_name} (#{anchor.keys.join(', ')}) VALUES "
     datatypes = []
-    conflict_keys = []
     conflict_updates = []
     bypassed = {}
     len = @h[data].length
@@ -235,9 +236,7 @@ private
         datatypes.push(transform[key])
       end
       
-      # if lookup.include?(key) then conflict_keys.push(key)
-      # else conflict_updates.push(key)
-      # end        
+      conflict_updates.push("#{key} = EXCLUDED.#{key}")      
     end
 
     vals = []
@@ -286,12 +285,13 @@ private
       elsif index % mod == 0
         puts "  - Loading #{using.to_s}: #{index}/#{len} (#{sprintf('%3.1f%%', (index.to_f / len * 100))})"
       end
-
-      #ActiveRecord::Base.connection.execute(sql + '(' + cells.join(', ') + ')')
     end
 
-    sql = sql + vals.join(', ') #+ " ON CONFLICT (#{conflict_keys.join(', ')}) DO NOTHING"
-    # ap sql
+    sql += vals.join(', ') 
+
+    if lookup
+      sql += " ON CONFLICT (#{lookup.join(', ')}) DO UPDATE SET #{conflict_updates.join(', ')}"
+    end
 
     puts "> Persisting data..."
     ActiveRecord::Base.connection.execute(sql)

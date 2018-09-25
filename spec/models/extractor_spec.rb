@@ -1,15 +1,18 @@
 require 'rails_helper'
 
 RSpec.describe Extractor, type: :model do
-
-  before :each do
-    #@e = Extractor.new('gtfs_rail-master').execite!
-    Extractor.new('gtfs_bus-master').execute!
+  context 're-entrancy' do
+    it 'should reflect database content correctly' do
+      e = Extractor.new('gtfs_rail-master')
+      e.execute!
+      Extractor.new('gtfs_rail-master').execute!
+      expect(e.accountability).to eq true
+    end
   end
 
-  context 'execution' do
-    it 'should reflect in database correctly' do
-      #expect(@e.accountability).to eq true
+  context 'bus data' do
+    it 'should be handled correctly' do
+      Extractor.new('gtfs_bus-master').execute!
     end
   end
 end

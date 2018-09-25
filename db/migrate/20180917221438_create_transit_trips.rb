@@ -12,5 +12,6 @@ class CreateTransitTrips < ActiveRecord::Migration[5.2]
     end
 
     add_index :transit_trips, :gtfs_id
+    add_index :transit_trips, [:transit_route_id, :gtfs_id, :direction], unique: true, name: 'unique_transit_trip_constraint'
   end
 end

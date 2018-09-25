@@ -9,5 +9,7 @@ class CreateTransitStopTimes < ActiveRecord::Migration[5.2]
       t.integer                :sequence, null: false
       t.string                 :handle, null: false
     end
+
+    add_index :transit_stop_times, [:transit_stop_id, :transit_trip_id, :departure], unique: true, name: 'unique_transit_stop_time_constraint'
   end
 end

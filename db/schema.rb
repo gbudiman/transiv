@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.boolean "is_sun", null: false
     t.date "start_date", null: false
     t.date "end_date", null: false
+    t.index ["gtfs_id"], name: "index_transit_services_on_gtfs_id", unique: true
   end
 
   create_table "transit_shapes", force: :cascade do |t|
@@ -63,6 +64,7 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.integer "departure", null: false
     t.integer "sequence", null: false
     t.string "handle", null: false
+    t.index ["transit_stop_id", "transit_trip_id", "departure"], name: "unique_transit_stop_time_constraint", unique: true
     t.index ["transit_stop_id"], name: "index_transit_stop_times_on_transit_stop_id"
     t.index ["transit_trip_id"], name: "index_transit_stop_times_on_transit_trip_id"
   end
@@ -73,6 +75,7 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.geography "lonlat", limit: {:srid=>4326, :type=>"st_point", :geographic=>true}
     t.bigint "parent_station_id"
     t.integer "stop_type", null: false
+    t.index ["gtfs_id"], name: "index_transit_stops_on_gtfs_id", unique: true
     t.index ["lonlat"], name: "index_transit_stops_on_lonlat", using: :gist
     t.index ["parent_station_id"], name: "index_transit_stops_on_parent_station_id"
   end
@@ -107,6 +110,7 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.string "block", null: false
     t.string "headsign"
     t.index ["gtfs_id"], name: "index_transit_trips_on_gtfs_id"
+    t.index ["transit_route_id", "gtfs_id", "direction"], name: "unique_transit_trip_constraint", unique: true
     t.index ["transit_route_id"], name: "index_transit_trips_on_transit_route_id"
     t.index ["transit_service_id"], name: "index_transit_trips_on_transit_service_id"
     t.index ["transit_shape_id"], name: "index_transit_trips_on_transit_shape_id"

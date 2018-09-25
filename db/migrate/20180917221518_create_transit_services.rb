@@ -13,5 +13,7 @@ class CreateTransitServices < ActiveRecord::Migration[5.2]
       t.date                   :start_date, null: false
       t.date                   :end_date, null: false
     end
+
+    add_index :transit_services, :gtfs_id, unique: true
   end
 end
