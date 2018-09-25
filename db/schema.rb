@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_09_17_221509) do
+ActiveRecord::Schema.define(version: 2018_09_25_053137) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,6 +20,18 @@ ActiveRecord::Schema.define(version: 2018_09_17_221509) do
     t.string "gtfs_id", null: false
     t.string "handle", null: false
     t.index ["gtfs_id"], name: "index_transit_agencies_on_gtfs_id", unique: true
+  end
+
+  create_table "transit_predictions", force: :cascade do |t|
+    t.bigint "transit_trip_id"
+    t.bigint "transit_stop_id"
+    t.integer "predictions", null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["transit_stop_id", "transit_trip_id"], name: "unique_prediction_stop_trip_constraint", unique: true
+    t.index ["transit_stop_id"], name: "index_transit_predictions_on_transit_stop_id"
+    t.index ["transit_trip_id", "transit_stop_id"], name: "precition_trip_stop"
+    t.index ["transit_trip_id"], name: "index_transit_predictions_on_transit_trip_id"
   end
 
   create_table "transit_routes", force: :cascade do |t|
