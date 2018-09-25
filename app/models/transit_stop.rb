@@ -78,14 +78,14 @@ class TransitStop < ApplicationRecord
 
   scope :sort_by_route_name, -> {
     #order('transit_routes.id, transit_trips.direction')
-    order('transit_routes.id')
+    order('transit_routes.gtfs_id')
   }
 
   scope :sort_by_route_departure, -> {
     order('transit_stop_times.departure ASC')
   }
 
-  scope :filter_routes, -> (routes) {
-    where('transit_routes.id' => routes)
+  scope :filter_routes, -> (*routes) {
+    merge(TransitRoute.routes_of_gtfs_id(routes))
   }
 end
