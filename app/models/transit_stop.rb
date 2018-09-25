@@ -63,6 +63,10 @@ class TransitStop < ApplicationRecord
     })
   }
 
+  scope :reveal_stop_info, -> {
+    select('transit_stops.handle')
+  }
+
   scope :humanize, -> (lat, lng) {
     select(%{
       transit_stops.id AS stop_id,

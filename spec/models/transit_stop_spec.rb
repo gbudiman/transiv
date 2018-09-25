@@ -22,15 +22,20 @@ RSpec.describe TransitStop, type: :model do
   end
 
   context 'proximity' do
-    it 'should list in ascending distance' do
-      q = TransitStop.within(lat: @lat, lng: @lng, at: @t, distance: 200).reveal_route
+    before :each do
+      @q = TransitStop.within(lat: @lat, lng: @lng, at: @t, distance: 200).reveal_route
+      ap @q.reveal_stop_info
+    end
 
-      expect(q.sort_by_route_name.distinct.pluck('transit_routes.id')).to include('801', '802', '805', '806')
-      expect(q.distinct.pluck('transit_routes.shorthand')).to include('910', '20')
+    it 'should list stations in ascending distance' do
+      expect(@q.sort_by_route_name.distinct.pluck('transit_routes.id')).to include('801', '802', '805', '806')
+      expect(@q.distinct.pluck('transit_routes.shorthand')).to include('910', '20')
+    end
 
-      d = q.reveal_stop_times.filter_routes(['801', '802'])
-      expect(d.distinct.pluck('transit_routes.id')).to include('801', '802')
-      expect(d.distinct.pluck('transit_stop_times.departure')).to all((be >= @t_start).and(be <= @t_end))
+    it 'should list departure times in ascending order' do
+      d = @q.reveal_stop_times.filter_routes(['801', '802']).distinct
+      expect(d.pluck('transit_routes.id')).to include('801', '802')
+      expect(d.pluck('transit_stop_times.departure')).to all((be >= @t_start).and(be <= @t_end))
     end
   end
 end
