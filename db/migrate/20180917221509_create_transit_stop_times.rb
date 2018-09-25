@@ -11,5 +11,7 @@ class CreateTransitStopTimes < ActiveRecord::Migration[5.2]
     end
 
     add_index :transit_stop_times, [:transit_stop_id, :transit_trip_id, :departure], unique: true, name: 'unique_transit_stop_time_constraint'
+    add_foreign_key_constraint :transit_stop_times, :transit_stops
+    add_foreign_key_constraint :transit_stop_times, :transit_trips
   end
 end

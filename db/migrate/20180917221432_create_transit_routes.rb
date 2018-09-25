@@ -13,5 +13,6 @@ class CreateTransitRoutes < ActiveRecord::Migration[5.2]
 
     add_index :transit_routes, [:transit_agency_id, :gtfs_id], unique: true
     add_index :transit_routes, :gtfs_id
+    add_foreign_key_constraint :transit_routes, :transit_agencies
   end
 end

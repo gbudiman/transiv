@@ -4,20 +4,20 @@ class TransitRoute < ApplicationRecord
   belongs_to :transit_agency
   validates :transit_agency, presence: true
 
-  scope :routes_of, -> (id, agency_id: nil) {
-    r = routes(id)
-    if agency_id
-      r = r.restrict_agency(agency_id)
-    end
-
-    return r
+  scope :all_routes_of_gtfs_id, -> (agency) {
+    restrict_agency_gtfs_id(agency)
   }
 
-  scope :routes, -> (id) {
-    if (id == :all)
-    else
-      where(id: id)
-    end
+  scope :routes_of_gtfs_id, -> (*gtfs_ids) {
+    routes_of(TransitRoute.where(gtfs_id: gtfs_ids).ids)
+  }
+
+  scope :routes_of, -> (ids) {
+    where(id: ids)
+  }
+
+  scope :restrict_agency_gtfs_id, -> (agency) {
+    joins_agency.where('transit_agencies.gtfs_id' => agency)
   }
 
   scope :restrict_agency, -> (agency_id) {

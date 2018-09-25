@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_09_18_204653) do
+ActiveRecord::Schema.define(version: 2018_09_17_221509) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -80,27 +80,6 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.index ["parent_station_id"], name: "index_transit_stops_on_parent_station_id"
   end
 
-  create_table "transit_trip_calendars", force: :cascade do |t|
-    t.bigint "transit_trip_id"
-    t.bigint "transit_calendar_id"
-    t.index ["transit_calendar_id"], name: "index_transit_trip_calendars_on_transit_calendar_id"
-    t.index ["transit_trip_id"], name: "index_transit_trip_calendars_on_transit_trip_id"
-  end
-
-  create_table "transit_trip_shapes", force: :cascade do |t|
-    t.bigint "transit_trip_id"
-    t.bigint "transit_shape_id"
-    t.index ["transit_shape_id"], name: "index_transit_trip_shapes_on_transit_shape_id"
-    t.index ["transit_trip_id"], name: "index_transit_trip_shapes_on_transit_trip_id"
-  end
-
-  create_table "transit_trip_stop_times", force: :cascade do |t|
-    t.bigint "transit_trip_id"
-    t.bigint "transit_stop_time_id"
-    t.index ["transit_stop_time_id"], name: "index_transit_trip_stop_times_on_transit_stop_time_id"
-    t.index ["transit_trip_id"], name: "index_transit_trip_stop_times_on_transit_trip_id"
-  end
-
   create_table "transit_trips", force: :cascade do |t|
     t.string "gtfs_id", null: false
     t.bigint "transit_route_id"
@@ -116,4 +95,10 @@ ActiveRecord::Schema.define(version: 2018_09_18_204653) do
     t.index ["transit_shape_id"], name: "index_transit_trips_on_transit_shape_id"
   end
 
+  add_foreign_key "transit_routes", "transit_agencies", name: "transit_routes_transit_agency_id_fk"
+  add_foreign_key "transit_stop_times", "transit_stops", name: "transit_stop_times_transit_stop_id_fk"
+  add_foreign_key "transit_stop_times", "transit_trips", name: "transit_stop_times_transit_trip_id_fk"
+  add_foreign_key "transit_trips", "transit_routes", name: "transit_trips_transit_route_id_fk"
+  add_foreign_key "transit_trips", "transit_services", name: "transit_trips_transit_service_id_fk"
+  add_foreign_key "transit_trips", "transit_shapes", name: "transit_trips_transit_shape_id_fk"
 end
