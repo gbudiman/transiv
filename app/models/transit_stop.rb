@@ -16,11 +16,14 @@ class TransitStop < ApplicationRecord
   scope :joins_services, -> (at) {
     joins(transit_stop_times: { transit_trip: :transit_service })
       .merge(TransitService.active(at))
-      #.active_day(at).active_service(at)
   }
 
   scope :joins_routes, -> {
     joins(transit_stop_times: { transit_trip: :transit_route })
+  }
+
+  scope :joins_agencies, -> {
+    joins(transit_stop_times: { transit_trip: { transit_route: :transit_agency }})
   }
 
   scope :joins_stop_times, -> (at) {
@@ -50,6 +53,7 @@ class TransitStop < ApplicationRecord
     } % [overclock])
   }
 
+
   scope :reveal_stop_times, -> {
     select('transit_stop_times.departure AS departure')
   }
@@ -63,8 +67,24 @@ class TransitStop < ApplicationRecord
     })
   }
 
+  scope :reveal_stop_id, -> {
+    select('transit_stops.id AS stop_id')
+  }
+
+  scope :reveal_stop_gtfs_id, -> {
+    select('transit_stops.gtfs_id AS stop_gtfs_id')
+  }
+
   scope :reveal_stop_info, -> {
     select('transit_stops.handle')
+  }
+
+  scope :reveal_agency, -> {
+    select('transit_agencies.gtfs_id')
+  }
+
+  scope :reveal_agency_live_feed, -> {
+    select('transit_agencies.live_feed AS live_feed')
   }
 
   scope :humanize, -> (lat, lng) {

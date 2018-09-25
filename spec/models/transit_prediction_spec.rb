@@ -7,6 +7,6 @@ RSpec.describe TransitPrediction, type: :model do
 
   it 'should load predictions data correctly' do
     prediction = @lf.get(agency: 'lametro', stop_id: 5153)
-    ap prediction
+    expect(prediction.predictions.length).to be > 0
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_09_25_053137) do
+ActiveRecord::Schema.define(version: 2018_09_25_191340) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 2018_09_25_053137) do
   create_table "transit_agencies", force: :cascade do |t|
     t.string "gtfs_id", null: false
     t.string "handle", null: false
+    t.string "live_feed"
     t.index ["gtfs_id"], name: "index_transit_agencies_on_gtfs_id", unique: true
   end
 
@@ -100,6 +101,7 @@ ActiveRecord::Schema.define(version: 2018_09_25_053137) do
     t.integer "direction", null: false
     t.string "block", null: false
     t.string "headsign"
+    t.index ["block"], name: "index_transit_trips_on_block"
     t.index ["gtfs_id"], name: "index_transit_trips_on_gtfs_id"
     t.index ["transit_route_id", "gtfs_id", "direction"], name: "unique_transit_trip_constraint", unique: true
     t.index ["transit_route_id"], name: "index_transit_trips_on_transit_route_id"
